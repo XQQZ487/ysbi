@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YSTI 青年健康趣味测试 | 中医养生版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F62E5',
+                        dark: '#1E293B',
+                        neutral: '#F8FAFC',
+                        tcm1: '#E53E3E', // 阴虚
+                        tcm2: '#DD6B20', // 痰湿
+                        tcm3: '#D69E2E', // 气虚
+                        tcm4: '#38A169', // 平和
+                        tcm5: '#3182CE', // 肝郁
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .btn-hover { transition: all 0.3s; }
+        .card-shadow { box-shadow: 0 4px 12px rgba(79, 98, 229, 0.08); }
+        .score-tag {
+            display: inline-block;
+            padding: 0 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-dark font-sans">
+
+<!-- 开始页面 -->
+<div id="start-page" class="p-6 max-w-xl mx-auto mt-10 bg-white rounded-2xl card-shadow text-center">
+    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fa fa-heartbeat text-2xl text-primary"></i>
+    </div>
+    <h1 class="text-2xl font-bold text-primary mb-2">YSTI 青年健康测试</h1>
+    <p class="text-gray-500 mb-2">24题测出你的健康人格</p>
+    <p class="text-xs text-gray-400 mb-6">结合中医体质 | 专属养生方案</p>
+    <button onclick="startTest()" class="w-full bg-primary text-white px-6 py-3 rounded-lg btn-hover">开始测试</button>
+</div>
+
+<!-- 测试页面 -->
+<div id="test-page" class="hidden p-6 max-w-xl mx-auto mt-10 bg-white rounded-2xl card-shadow">
+    <div class="mb-4">
+        <div class="flex justify-between text-sm text-gray-500 mb-1">
+            <span>测试进度</span>
+            <span id="progress-text">1/24</span>
+        </div>
+        <div class="h-2 bg-gray-100 rounded-full">
+            <div id="progress-bar" class="h-full bg-primary rounded-full w-[4%] transition-all"></div>
+        </div>
+    </div>
+    <div id="question-text" class="text-lg font-semibold mb-4"></div>
+    <div id="options-box" class="space-y-3 mb-6"></div>
+    <div class="flex justify-between">
+        <button onclick="prevQuestion()" id="prev-btn" class="px-4 py-2 border rounded-lg text-gray-600 opacity-50 cursor-not-allowed">
+            <i class="fa fa-arrow-left"></i> 上一题
+        </button>
+        <button onclick="nextQuestion()" class="bg-primary text-white px-6 py-2 rounded-lg btn-hover">
+            下一题 <i class="fa fa-arrow-right"></i>
+        </button>
+    </div>
+</div>
+
+<!-- 结果页面 -->
+<div id="result-page" class="hidden p-6 max-w-xl mx-auto mt-10 bg-white rounded-2xl card-shadow">
+    <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fa fa-trophy text-xl text-primary"></i>
+        </div>
+        <h2 class="text-xl font-bold mb-2">你的健康报告</h2>
+        <div id="result-code" class="text-xl font-bold text-primary mb-1"></div>
+        <div id="result-name" class="text-gray-700 font-medium mb-2"></div>
+        <div id="tcm-type" class="text-xs score-tag mb-4"></div>
+    </div>
+    
+    <!-- 四维评分+中医解读 -->
+    <div class="mb-6">
+        <h4 class="font-bold text-sm text-gray-700 mb-3">四维健康评分（中医解读）</h4>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-neutral p-3 rounded-lg">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-gray-500">作息指数</span>
+                    <span id="score1-tag" class="score-tag"></span>
+                </div>
+                <div id="score1" class="font-semibold text-lg">0</div>
+                <div id="score1-desc" class="text-xs text-gray-500 mt-1">中医：伤阴耗血</div>
+            </div>
+            <div class="bg-neutral p-3 rounded-lg">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-gray-500">体态指数</span>
+                    <span id="score2-tag" class="score-tag"></span>
+                </div>
+                <div id="score2" class="font-semibold text-lg">0</div>
+                <div id="score2-desc" class="text-xs text-gray-500 mt-1">中医：气滞血瘀</div>
+            </div>
+            <div class="bg-neutral p-3 rounded-lg">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-gray-500">饮食指数</span>
+                    <span id="score3-tag" class="score-tag"></span>
+                </div>
+                <div id="score3" class="font-semibold text-lg">0</div>
+                <div id="score3-desc" class="text-xs text-gray-500 mt-1">中医：痰湿内生</div>
+            </div>
+            <div class="bg-neutral p-3 rounded-lg">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-gray-500">精神指数</span>
+                    <span id="score4-tag" class="score-tag"></span>
+                </div>
+                <div id="score4" class="font-semibold text-lg">0</div>
+                <div id="score4-desc" class="text-xs text-gray-500 mt-1">中医：肝郁气滞</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 中医体质分析+养生建议 -->
+    <div class="mb-6">
+        <h4 class="font-bold text-sm text-primary mb-2">📖 中医体质分析</h4>
+        <div id="tcm-desc" class="text-sm text-gray-700 leading-relaxed p-3 bg-neutral rounded-lg mb-3"></div>
+        
+        <h4 class="font-bold text-sm text-primary mb-2">🌿 专属养生建议</h4>
+        <div id="tcm-suggest" class="text-sm text-gray-700 leading-relaxed p-3 bg-neutral rounded-lg">
+            <div class="mb-2"><strong>饮食调理：</strong><span id="diet-sug"></span></div>
+            <div class="mb-2"><strong>起居建议：</strong><span id="life-sug"></span></div>
+            <div class="mb-2"><strong>经络穴位：</strong><span id="acup-sug"></span></div>
+            <div><strong>情志调节：</strong><span id="mood-sug"></span></div>
+        </div>
+    </div>
+
+    <div class="flex gap-3">
+        <button onclick="copyLink()" class="flex-1 bg-primary text-white py-2 rounded-lg btn-hover">
+            <i class="fa fa-share-alt mr-1"></i>复制链接
+        </button>
+        <button onclick="location.reload()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg btn-hover">
+            <i class="fa fa-refresh mr-1"></i>重新测试
+        </button>
+    </div>
+</div>
+
+<script>
+// 24道测试题
+const questions = [
+    "每到夜晚，我会越熬越清醒，舍不得结束一天、习惯性晚睡",
+    "我三餐饮食不规律，常吃外卖重口食物，蔬果摄入严重不足",
+    "我极度爱久坐，一坐下就不愿起身活动，长期缺乏走动",
+    "换季降温时我体质脆弱，很容易感冒咳嗽、身体不舒服",
+    "我频繁吃奶茶、炸鸡、火锅等高油高糖的垃圾快乐食品",
+    "早上被闹钟叫醒时，我精神萎靡、灵魂抽离，身体极度疲惫",
+    "久坐之后，我经常腰酸背痛、肩颈僵硬，身体酸痛感明显",
+    "我高度依赖咖啡/功能饮料，不靠提神饮品就无法正常状态",
+    "我的皮肤状态很差，容易反复爆痘、痘印堆积、肤质糟糕",
+    "睡前大脑胡思乱想、过度内耗，思绪杂乱很难入睡",
+    "我完全没有运动和拉伸习惯，极度不爱锻炼、懒得活动",
+    "社交聚会结束后，我会快速电量耗尽，身心疲惫、情绪低落",
+    "我很少喝白开水，日常靠奶茶咖啡冷饮替代正常饮水",
+    "周末作息彻底紊乱，疯狂赖床补觉、昼夜颠倒越睡越累",
+    "我日常坐姿极差，常年弯腰驼背、葛优瘫、翘二郎腿",
+    "每到下午三四点，我就精神涣散、头昏犯困、状态低迷",
+    "面对压力时，我会出现失眠、emo、身体不适等多种负面反应",
+    "吃完重油重辣重盐食物后，我会肠胃不适、上火长痘、代谢变差",
+    "只要熬夜，第二天就会头痛心慌、浑身乏力，整个人状态报废",
+    "我长期低头怼脸刷手机，姿势伤颈椎，完全不注重眼部颈椎保护",
+    "每天早上起床，我的脸部都会严重水肿，颜值状态大打折扣",
+    "我的肠胃十分脆弱敏感，经常胀气消化不良、容易腹泻难受",
+    "我日常极少走路活动，每日步数极低，长期宅家缺乏运动",
+    "我早睡执行力极差，频繁熬夜打脸，根本做不到规律早睡"
+];
+
+// 评分等级（6-24分）
+const scoreLevel = {
+    low: { min: 6, max: 12, tag: "差", color: "#E53E3E", desc: "严重失衡" },
+    mid: { min: 13, max: 18, tag: "中", color: "#DD6B20", desc: "轻度失衡" },
+    high: { min: 19, max: 24, tag: "优", color: "#38A169", desc: "状态良好" }
+};
+
+// 16型人格+中医体质+养生建议
+const personalityMap = {
+    MPUW: {
+        name: "明律轻动清润稳序者",
+        tcmType: "平和质",
+        tcmColor: "#38A169",
+        tcmDesc: "中医认为你属于平和质，是理想的健康体质！气血调和、阴阳平衡，脏腑功能正常，身体对外界适应能力强，很少出现不适症状。",
+        diet: "无需刻意忌口，保持饮食均衡即可；可适当吃应季蔬果，每周1-2次杂粮粥，维持脾胃功能。",
+        life: "保持规律作息，避免过度劳累；每天保持30分钟温和运动（快走/八段锦），巩固体质。",
+        acup: "日常按揉足三里（膝盖下3寸）、太冲穴（足背），每次1分钟，增强气血循环。",
+        mood: "保持情绪平和，可偶尔听轻音乐、冥想，避免大喜大悲耗损气血。"
+    },
+    MPUX: {
+        name: "明律轻动清润易感体",
+        tcmType: "气郁质",
+        tcmColor: "#3182CE",
+        tcmDesc: "中医认为你属于气郁质兼平和质，身体底子好，但肝气郁结、情志不舒。表现为情绪敏感、易焦虑，虽无明显躯体不适，但长期易导致失眠、胸闷。",
+        diet: "多吃疏肝理气食物：陈皮、佛手、芹菜、茼蒿；少吃生冷、油炸食物，避免加重肝郁。",
+        life: "每天睡前散步15分钟，避免熬夜刷手机；晨起开窗通风，保持室内空气流通。",
+        acup: "按揉太冲穴（足背）、膻中穴（两乳中间），每次1-2分钟，缓解肝郁。",
+        mood: "每天花5分钟倾诉或写日记，释放情绪；可尝试深呼吸、冥想，平复思绪。"
+    },
+    MPVW: {
+        name: "明律轻动浓享稳序者",
+        tcmType: "痰湿质",
+        tcmColor: "#D69E2E",
+        tcmDesc: "中医认为你属于痰湿质兼平和质，作息运动俱佳，但饮食偏滋腻，导致水湿内停。表现为偶尔腹胀、大便黏腻，皮肤易出油，身体沉重感。",
+        diet: "多吃健脾祛湿食物：薏米、赤小豆、冬瓜、山药；少吃甜食、油炸、生冷食物，减少痰湿生成。",
+        life: "饭后散步15分钟，避免久坐；每周1次汗蒸/泡脚，促进水湿代谢。",
+        acup: "按揉丰隆穴（小腿外侧）、阴陵泉（小腿内侧），每次1分钟，健脾祛湿。",
+        mood: "保持心情舒畅，痰湿易致情绪沉闷，可多听轻快音乐，多到户外晒太阳。"
+    },
+    MPVX: {
+        name: "明律轻动浓享易感体",
+        tcmType: "痰湿+气郁质",
+        tcmColor: "#DD6B20",
+        tcmDesc: "中医认为你属于痰湿兼气郁质，饮食重口致痰湿内生，情绪敏感致肝气郁结。表现为腹胀、皮肤出油、焦虑失眠，气血运行不畅。",
+        diet: "疏肝祛湿兼顾：陈皮薏米水、佛手山药粥；忌辛辣、生冷、甜食，三餐定时定量。",
+        life: "每天运动30分钟（快走/跳绳），睡前泡脚（加生姜），促进循环和睡眠。",
+        acup: "按揉太冲+丰隆穴，交替按揉，每次各1分钟，疏肝祛湿。",
+        mood: "减少思虑，可尝试瑜伽、冥想；每天和朋友聊聊天，避免独处内耗。"
+    },
+    MQUW: {
+        name: "明律静固清润稳序者",
+        tcmType: "血瘀质",
+        tcmColor: "#DD6B20",
+        tcmDesc: "中医认为你属于血瘀质兼平和质，作息饮食规律，但久坐不动致气血瘀滞。表现为肩颈酸痛、肢体麻木，面色暗沉，血液循环不畅。",
+        diet: "多吃活血化瘀食物：山楂、黑木耳、红枣；少吃寒凉食物，避免加重血瘀。",
+        life: "每小时起身活动2分钟，做扩胸/转头动作；每天保证6000步，促进气血循环。",
+        acup: "按揉肩井穴（肩部）、合谷穴（手背），每次1分钟，缓解肩颈瘀滞。",
+        mood: "保持情绪放松，血瘀易致烦躁，可听舒缓音乐，避免长期紧绷。"
+    },
+    MQUX: {
+        name: "明律静固清润易感体",
+        tcmType: "血瘀+气郁质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于血瘀兼气郁质，久坐致血瘀、情绪敏感致肝郁，双重因素导致气血运行失常。表现为肩颈痛、失眠、胸闷、注意力不集中。",
+        diet: "疏肝活血：玫瑰花茶、山楂枸杞水；忌生冷、辛辣，三餐清淡。",
+        life: "每天运动20分钟（拉伸/慢跑），睡前热敷肩颈，改善循环。",
+        acup: "按揉太冲+肩井穴，每次各1分钟，疏肝活血。",
+        mood: "减少独处时间，多参与轻松社交；每天花10分钟做喜欢的事，转移注意力。"
+    },
+    MQVW: {
+        name: "明律静固浓享稳序者",
+        tcmType: "痰湿+血瘀质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于痰湿兼血瘀质，重口饮食致痰湿、久坐致血瘀，脏腑功能受影响。表现为腹胀、肩颈痛、大便黏腻、身体沉重。",
+        diet: "祛湿活血：薏米山楂水、冬瓜木耳汤；忌油炸、甜食、冷饮。",
+        life: "饭后散步20分钟，每周2次轻度运动（瑜伽/太极），促进代谢和循环。",
+        acup: "按揉丰隆+肩井穴，每次各1分钟，祛湿活血。",
+        mood: "保持乐观，痰湿血瘀易致情绪低落，可多到户外呼吸新鲜空气。"
+    },
+    MQVX: {
+        name: "明律静固浓享易感体",
+        tcmType: "痰湿+血瘀+气郁质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于痰湿、血瘀、气郁复合体质，虽作息规律，但久坐、重口、焦虑三重问题导致气血阴阳失衡。表现为肩颈痛、腹胀、失眠、情绪波动。",
+        diet: "清淡饮食，多吃健脾疏肝食物：山药、陈皮、芹菜；忌重口、生冷、熬夜加餐。",
+        life: "每天运动30分钟，睡前泡脚+热敷肩颈，双管齐下改善循环。",
+        acup: "按揉太冲+丰隆+肩井穴，每次各1分钟，全面调理。",
+        mood: "减少过度思考，可尝试正念冥想；每天记录一件开心的事，培养积极心态。"
+    },
+    NPUW: {
+        name: "夜行者轻动清润稳序者",
+        tcmType: "阴虚质",
+        tcmColor: "#DD6B20",
+        tcmDesc: "中医认为你属于阴虚质兼平和质，熬夜耗损阴液，虽运动饮食良好，但阴血不足。表现为口干、手心热、失眠、精力易透支。",
+        diet: "多吃滋阴食物：百合、银耳、枸杞、麦冬；少吃辛辣、温燥食物（辣椒、羊肉）。",
+        life: "固定入睡时间（最晚0点），熬夜后吃银耳羹补阴；中午小憩20分钟，补充精力。",
+        acup: "按揉三阴交（小腿内侧）、涌泉穴（足底），每次1分钟，滋阴补肾。",
+        mood: "避免情绪急躁，阴虚易致上火，可听轻音乐，保持心态平和。"
+    },
+    NPUX: {
+        name: "夜行者轻动清润易感体",
+        tcmType: "阴虚+气郁质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于阴虚兼气郁质，熬夜耗阴+情绪敏感致肝郁，阴液不足且气机不畅。表现为口干、失眠、焦虑、易怒，身心俱疲。",
+        diet: "滋阴疏肝：百合莲子粥、玫瑰花茶；忌辛辣、咖啡、浓茶。",
+        life: "睡前1小时远离手机，用温水泡脚；熬夜当天避免剧烈运动，以静养为主。",
+        acup: "按揉三阴交+太冲穴，每次各1分钟，滋阴疏肝。",
+        mood: "每天花5分钟放空，不纠结小事；可尝试写情绪日记，释放压力。"
+    },
+    NPVW: {
+        name: "夜行者轻动浓享稳序者",
+        tcmType: "阴虚+痰湿质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于阴虚兼痰湿质，熬夜耗阴+重口饮食致痰湿，阴液不足且水湿内停。表现为口干、腹胀、皮肤出油、睡眠浅。",
+        diet: "滋阴祛湿：薏米百合粥、冬瓜汤；忌甜食、油炸、熬夜加餐。",
+        life: "熬夜后喝温水+吃水果，补充水分；饭后散步15分钟，促进消化。",
+        acup: "按揉三阴交+丰隆穴，每次各1分钟，滋阴祛湿。",
+        mood: "保持情绪稳定，痰湿易致沉闷，阴虚易致烦躁，可听轻快音乐调节。"
+    },
+    NPVX: {
+        name: "夜行者轻动浓享易感体",
+        tcmType: "阴虚+痰湿+气郁质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于阴虚、痰湿、气郁复合体质，熬夜、重口、焦虑三重问题导致阴液耗损、痰湿内生、肝气郁结。表现为口干、腹胀、失眠、焦虑，身体长期处于失衡状态。",
+        diet: "清淡滋阴：小米粥、银耳汤、冬瓜；忌辛辣、甜食、咖啡、冷饮。",
+        life: "逐步提前入睡时间（每天15分钟），睡前泡脚；每天轻度运动15分钟，避免久坐。",
+        acup: "按揉三阴交+丰隆+太冲穴，每次各1分钟，综合调理。",
+        mood: "减少内耗，专注当下；每天做一件小事（比如养花、听歌），培养松弛感。"
+    },
+    NQUW: {
+        name: "夜行者静固清润稳序者",
+        tcmType: "阴虚+血瘀质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于阴虚兼血瘀质，熬夜耗阴+久坐致血瘀，阴液不足且气血瘀滞。表现为口干、肩颈痛、头晕、精力差，血液循环和阴液双重不足。",
+        diet: "滋阴活血：红枣枸杞粥、黑木耳汤；忌寒凉、辛辣，多喝温水。",
+        life: "每40分钟起身活动，做肩颈拉伸；熬夜后避免久坐，适当走动。",
+        acup: "按揉三阴交+肩井穴，每次各1分钟，滋阴活血。",
+        mood: "避免长期紧绷，可做深呼吸放松；每天晒太阳10分钟，补充阳气。"
+    },
+    NQUX: {
+        name: "夜行者静固清润易感体",
+        tcmType: "阴虚+血瘀+气郁质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于阴虚、血瘀、气郁复合体质，熬夜、久坐、焦虑导致阴液耗损、气血瘀滞、肝气郁结。表现为口干、肩颈痛、失眠、焦虑，身心状态差。",
+        diet: "滋阴活血疏肝：玫瑰枸杞茶、山药粥；忌辛辣、生冷、咖啡。",
+        life: "每天运动20分钟（散步/拉伸），睡前热敷肩颈+泡脚，双重改善循环。",
+        acup: "按揉三阴交+肩井+太冲穴，每次各1分钟，全面调理。",
+        mood: "远离负能量信息，多和积极的人交流；每天记录3件小事，培养满足感。"
+    },
+    NQVW: {
+        name: "夜行者静固浓享稳序者",
+        tcmType: "阴虚+痰湿+血瘀质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于阴虚、痰湿、血瘀复合体质，熬夜、久坐、重口导致阴液耗损、痰湿内生、气血瘀滞。表现为口干、腹胀、肩颈痛、皮肤差，脏腑功能紊乱。",
+        diet: "滋阴祛湿活血：薏米红枣粥、冬瓜木耳汤；忌油炸、甜食、冷饮、熬夜加餐。",
+        life: "逐步调整作息，每天增加10分钟运动量；饭后必须散步，避免积食。",
+        acup: "按揉三阴交+丰隆+肩井穴，每次各1分钟，综合改善。",
+        mood: "保持乐观，避免情绪低落；可尝试八段锦，调和气血。"
+    },
+    NQVX: {
+        name: "终极脆皮青年",
+        tcmType: "阴虚+痰湿+血瘀+气郁质",
+        tcmColor: "#E53E3E",
+        tcmDesc: "中医认为你属于阴虚、痰湿、血瘀、气郁四合一复合体质，熬夜、久坐、重口、焦虑四大问题导致气血阴阳严重失衡。表现为疲劳、失眠、肩颈痛、肠胃差、情绪低落，是典型的“脆皮青年”体质。",
+        diet: "先从清淡饮食开始：小米粥、蔬菜汤、蒸蛋；忌所有重口、生冷、甜食，每天喝2000ml温水。",
+        life: "最低成本调整：早睡1小时、每天走3000步、吃一顿清淡午餐；逐步增加运动量，避免突然高强度运动。",
+        acup: "每天按揉足三里（脾胃）+太冲穴（疏肝），各1分钟，先调理核心脏腑。",
+        mood: "放弃完美主义，接受循序渐进的改变；每天花10分钟做喜欢的事，减少精神内耗。"
+    }
+};
+
+let current = 0;
+let answers = Array(24).fill(null);
+
+// 复制链接功能（适配公网链接）
+function copyLink() {
+    const publicUrl = 'https://XQQZ487.github.io/ysbi/';
+    navigator.clipboard.writeText(publicUrl).then(() => {
+        alert("链接已复制！可直接发微信分享");
+    }).catch(() => {
+        alert("复制失败，手动复制：" + publicUrl);
+    });
+}
+
+// 获取评分等级
+function getScoreLevel(score) {
+    if (score >= scoreLevel.low.min && score <= scoreLevel.low.max) return scoreLevel.low;
+    if (score >= scoreLevel.mid.min && score <= scoreLevel.mid.max) return scoreLevel.mid;
+    return scoreLevel.high;
+}
+
+// 四维评分中医解读
+function getScoreDesc(type, level) {
+    const descMap = {
+        score1: { // 作息
+            low: "中医：熬夜耗伤阴血，肝肾阴虚，易口干、失眠",
+            mid: "中医：作息轻度紊乱，阴液略亏，精力易透支",
+            high: "中医：作息规律，阴血充足，肝肾功能正常"
+        },
+        score2: { // 体态
+            low: "中医：久坐致气滞血瘀，肩颈腰易酸痛，循环不畅",
+            mid: "中医：活动不足，气血运行稍缓，肢体偶有麻木",
+            high: "中医：活动适度，气血通畅，肢体舒展"
+        },
+        score3: { // 饮食
+            low: "中医：饮食重口致痰湿内生，肠胃紊乱，皮肤出油",
+            mid: "中医：饮食轻度失衡，痰湿初生，偶有腹胀",
+            high: "中医：饮食清淡，脾胃功能正常，无痰湿困扰"
+        },
+        score4: { // 精神
+            low: "中医：情绪内耗致肝郁气滞，易焦虑、胸闷、失眠",
+            mid: "中医：情绪轻度敏感，肝气略郁，偶有烦躁",
+            high: "中医：情绪稳定，肝气条达，心态平和"
+        }
+    };
+    return descMap[type][level === "差" ? "low" : level === "中" ? "mid" : "high"];
+}
+
+function startTest() {
+    document.getElementById("start-page").classList.add("hidden");
+    document.getElementById("test-page").classList.remove("hidden");
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const q = questions[current];
+    document.getElementById("question-text").innerText = `${current + 1}. ${q}`;
+    document.getElementById("progress-text").innerText = `${current + 1}/24`;
+    document.getElementById("progress-bar").style.width = `${((current + 1)/24)*100}%`;
+    
+    const box = document.getElementById("options-box");
+    box.innerHTML = "";
+    const opts = ["A. 非常符合我", "B. 比较符合我", "C. 不太符合我", "D. 完全不符合我"];
+    opts.forEach((text, idx) => {
+        const div = document.createElement("div");
+        div.className = "p-3 border rounded-lg cursor-pointer hover:bg-primary/10 transition-all";
+        div.innerText = text;
+        if (answers[current] === idx + 1) {
+            div.classList.add("bg-primary/20", "border-primary");
+        }
+        div.onclick = () => {
+            answers[current] = idx + 1;
+            document.querySelectorAll("#options-box div").forEach(d => {
+                d.classList.remove("bg-primary/20", "border-primary");
+            });
+            div.classList.add("bg-primary/20", "border-primary");
+            if (current > 0) {
+                document.getElementById("prev-btn").classList.remove("opacity-50", "cursor-not-allowed");
+                document.getElementById("prev-btn").disabled = false;
+            }
+        };
+        box.appendChild(div);
+    });
+
+    if (current === 0) {
+        document.getElementById("prev-btn").classList.add("opacity-50", "cursor-not-allowed");
+        document.getElementById("prev-btn").disabled = true;
+    } else {
+        document.getElementById("prev-btn").classList.remove("opacity-50", "cursor-not-allowed");
+        document.getElementById("prev-btn").disabled = false;
+    }
+}
+
+function prevQuestion() {
+    if (current > 0) {
+        current--;
+        renderQuestion();
+    }
+}
+
+function nextQuestion() {
+    if (answers[current] == null) {
+        alert("请选择一个选项后继续～");
+        return;
+    }
+    current++;
+    if (current < 24) {
+        renderQuestion();
+    } else {
+        showResult();
+    }
+}
+
+function showResult() {
+    // 计算四个维度得分
+    const score1 = answers[0] + answers[5] + answers[9] + answers[13] + answers[18] + answers[23]; // 作息
+    const score2 = answers[2] + answers[6] + answers[10] + answers[14] + answers[19] + answers[22]; // 体态
+    const score3 = answers[1] + answers[4] + answers[8] + answers[12] + answers[17] + answers[21]; // 饮食
+    const score4 = answers[3] + answers[7] + answers[11] + answers[15] + answers[16] + answers[20]; // 精神
+
+    // 判定评分等级
+    const level1 = getScoreLevel(score1);
+    const level2 = getScoreLevel(score2);
+    const level3 = getScoreLevel(score3);
+    const level4 = getScoreLevel(score4);
+
+    // 生成人格代码
+    const M = score1 > 17 ? "M" : "N";
+    const P = score2 > 17 ? "P" : "Q";
+    const U = score3 > 17 ? "U" : "V";
+    const W = score4 > 17 ? "W" : "X";
+    const code = M + P + U + W;
+    
+    // 获取人格信息
+    const personality = personalityMap[code] || {
+        name: "普通健康青年",
+        tcmType: "平和质偏失衡",
+        tcmColor: "#DD6B20",
+        tcmDesc: "中医认为你属于平和质偏轻度失衡，有部分不良习惯导致体质略有偏差，但整体问题不大。",
+        diet: "保持饮食均衡，减少重口、生冷食物摄入，多吃应季蔬果。",
+        life: "规律作息，每天保持适量运动，避免久坐不动。",
+        acup: "日常按揉足三里穴，每次1分钟，调理脾胃功能。",
+        mood: "保持情绪稳定，避免过度焦虑，培养轻松的生活状态。"
+    };
+
+    // 渲染结果
+    document.getElementById("test-page").classList.add("hidden");
+    document.getElementById("result-page").classList.remove("hidden");
+    
+    // 核心信息
+    document.getElementById("result-code").innerText = code;
+    document.getElementById("result-name").innerText = personality.name;
+    document.getElementById("tcm-type").innerText = personality.tcmType;
+    document.getElementById("tcm-type").style.backgroundColor = personality.tcmColor;
+    
+    // 四维评分
+    document.getElementById("score1").innerText = score1;
+    document.getElementById("score1-tag").innerText = level1.tag;
+    document.getElementById("score1-tag").style.backgroundColor = level1.color;
+    document.getElementById("score1-desc").innerText = getScoreDesc("score1", level1.tag);
+
+    document.getElementById("score2").innerText = score2;
+    document.getElementById("score2-tag").innerText = level2.tag;
+    document.getElementById("score2-tag").style.backgroundColor = level2.color;
+    document.getElementById("score2-desc").innerText = getScoreDesc("score2", level2.tag);
+
+    document.getElementById("score3").innerText = score3;
+    document.getElementById("score3-tag").innerText = level3.tag;
+    document.getElementById("score3-tag").style.backgroundColor = level3.color;
+    document.getElementById("score3-desc").innerText = getScoreDesc("score3", level3.tag);
+
+    document.getElementById("score4").innerText = score4;
+    document.getElementById("score4-tag").innerText = level4.tag;
+    document.getElementById("score4-tag").style.backgroundColor = level4.color;
+    document.getElementById("score4-desc").innerText = getScoreDesc("score4", level4.tag);
+
+    // 中医分析+养生建议
+    document.getElementById("tcm-desc").innerText = personality.tcmDesc;
+    document.getElementById("diet-sug").innerText = personality.diet;
+    document.getElementById("life-sug").innerText = personality.life;
+    document.getElementById("acup-sug").innerText = personality.acup;
+    document.getElementById("mood-sug").innerText = personality.mood;
+}
+</script>
+</body>
+</html>

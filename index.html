@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YSTI 青年健康趣味测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F62E5',
+                        dark: '#1E293B'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .btn-hover { transition: all 0.3s; }
+    </style>
+</head>
+<body class="bg-gray-50 text-dark font-sans">
+
+<!-- 开始页面 -->
+<div id="start-page" class="p-6 max-w-xl mx-auto mt-10 bg-white rounded-2xl shadow text-center">
+    <h1 class="text-2xl font-bold text-primary mb-4">YSTI 青年健康趣味测试</h1>
+    <p class="mb-6">24 题，测出你是不是终极脆皮青年</p>
+    <button onclick="startTest()" class="bg-primary text-white px-6 py-3 rounded-lg btn-hover">开始测试</button>
+</div>
+
+<!-- 测试页面 -->
+<div id="test-page" class="hidden p-6 max-w-xl mx-auto mt-10 bg-white rounded-2xl shadow">
+    <div id="question-text" class="text-lg font-semibold mb-4"></div>
+    <div id="options-box" class="space-y-3 mb-6"></div>
+    <button onclick="nextQuestion()" class="bg-primary text-white px-6 py-2 rounded-lg btn-hover">下一题</button>
+</div>
+
+<!-- 结果页面 -->
+<div id="result-page" class="hidden p-6 max-w-xl mx-auto mt-10 bg-white rounded-2xl shadow text-center">
+    <h2 class="text-xl font-bold mb-4">测试完成！</h2>
+    <div id="result-code" class="text-xl font-bold text-primary mb-2"></div>
+    <div id="result-desc" class="mb-6"></div>
+    <button onclick="location.reload()" class="bg-primary text-white px-6 py-2 rounded-lg">重新测试</button>
+</div>
+
+<script>
+const questions = [
+    "每到夜晚，我会越熬越清醒，习惯性晚睡",
+    "我三餐饮食不规律，常吃外卖重口食物",
+    "我极度爱久坐，不愿起身活动",
+    "换季降温时我体质脆弱，容易不舒服",
+    "我频繁吃奶茶、炸鸡、火锅等高油高糖食物",
+    "早上被叫醒时，我精神萎靡、极度疲惫",
+    "久坐后经常腰酸背痛、肩颈僵硬",
+    "我高度依赖咖啡/功能饮料提神",
+    "我的皮肤状态差，容易反复爆痘",
+    "睡前大脑胡思乱想，很难入睡",
+    "我完全没有运动习惯，懒得活动",
+    "社交后会身心疲惫、情绪低落",
+    "我很少喝白开水，靠奶茶咖啡代替",
+    "周末作息紊乱，昼夜颠倒越睡越累",
+    "我日常坐姿极差，弯腰驼背翘腿",
+    "下午三四点就精神涣散、头昏犯困",
+    "面对压力时会失眠、身体不适",
+    "吃重油重辣后肠胃不适、上火长痘",
+    "熬夜后第二天头痛心慌、状态报废",
+    "长期低头刷手机，伤颈椎眼睛",
+    "每天起床脸部严重水肿",
+    "肠胃脆弱敏感，经常胀气不舒服",
+    "日常极少走路，每日步数极低",
+    "我早睡执行力极差，经常熬夜"
+];
+
+let current = 0;
+let answers = Array(24).fill(null);
+
+function startTest() {
+    document.getElementById("start-page").classList.add("hidden");
+    document.getElementById("test-page").classList.remove("hidden");
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const q = questions[current];
+    document.getElementById("question-text").innerText = `${current + 1}. ${q}`;
+    const box = document.getElementById("options-box");
+    box.innerHTML = "";
+    const opts = ["非常符合我", "比较符合我", "不太符合我", "完全不符合我"];
+    opts.forEach((text, idx) => {
+        const div = document.createElement("div");
+        div.className = "p-3 border rounded-lg cursor-pointer hover:bg-primary/10";
+        div.innerText = text;
+        div.onclick = () => {
+            answers[current] = idx + 1;
+            document.querySelectorAll("#options-box div").forEach(d => d.classList.remove("bg-primary/20"));
+            div.classList.add("bg-primary/20");
+        };
+        box.appendChild(div);
+    });
+}
+
+function nextQuestion() {
+    if (answers[current] == null) return alert("请选择一个选项");
+    current++;
+    if (current < 24) renderQuestion();
+    else showResult();
+}
+
+function showResult() {
+    const s1 = answers[0] + answers[4] + answers[9] + answers[13] + answers[18] + answers[23];
+    const s2 = answers[2] + answers[6] + answers[10] + answers[14] + answers[19] + answers[22];
+    const s3 = answers[1] + answers[5] + answers[8] + answers[12] + answers[17] + answers[21];
+    const s4 = answers[3] + answers[7] + answers[11] + answers[15] + answers[16] + answers[20];
+
+    const code = (s1 > 17 ? "M" : "N") + (s2 > 17 ? "P" : "Q") + (s3 > 17 ? "U" : "V") + (s4 > 17 ? "W" : "X");
+    const textMap = {
+        NQVX: "终极脆皮青年",
+        MPUW: "健康自律王者",
+    };
+    const text = textMap[code] || "普通健康青年";
+
+    document.getElementById("test-page").classList.add("hidden");
+    document.getElementById("result-page").classList.remove("hidden");
+    document.getElementById("result-code").innerText = `${code} · ${text}`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YSTI 青年健康趣味测试｜24题测出你的真实健康人格</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        neutral: '#F8FAFC',
+                        dark: '#1E293B'
+                    },
+                    fontFamily: {
+                        sans: ['Inter','system-ui','sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        @layer utilities {
+            .card-shadow { box-shadow: 0 10px 30px rgba(79,70,229,0.08); }
+            .btn-hover { @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-dark font-sans">
+
+<!-- 开始页面 -->
+<div id="start-page" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 md:p-8 max-w-xl w-full card-shadow">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fa fa-heart text-2xl text-primary"></i>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">YSTI 青年健康趣味测试</h1>
+            <p class="text-gray-500">24 题测出你的真实健康人格</p>
+        </div>
+
+        <div class="space-y-3 mb-6 text-sm text-gray-600">
+            <p>🎉 本测试共 24 题，无对错之分</p>
+            <p>🧡 计分：A=1分｜B=2分｜C=3分｜D=4分</p>
+            <p>💎 结果包含：作息/体态/饮食/精神四大指数 + 16型健康人格</p>
+        </div>
+
+        <button id="start-btn" class="w-full bg-primary text-white py-3 rounded-xl font-medium btn-hover">
+            开始测试
+        </button>
+    </div>
+</div>
+
+<!-- 测试页面 -->
+<div id="test-page" class="hidden min-h-screen p-4 py-8">
+    <div class="max-w-xl mx-auto bg-white rounded-2xl p-6 card-shadow">
+        <div class="mb-5">
+            <div class="flex justify-between text-sm text-gray-500 mb-1">
+                <span>测试进度</span>
+                <span id="progress-text">0/24</span>
+            </div>
+            <div class="h-2 bg-gray-100 rounded-full">
+                <div id="progress-bar" class="h-full bg-primary rounded-full w-0 transition-all"></div>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h2 id="question-title" class="text-lg font-semibold mb-4">题目加载中...</h2>
+            <div id="options-container" class="space-y-2"></div>
+        </div>
+
+        <div class="flex justify-between">
+            <button id="prev-btn" class="px-4 py-2 border rounded-lg text-gray-600 opacity-50 cursor-not-allowed">
+                <i class="fa fa-arrow-left"></i> 上一题
+            </button>
+            <button id="next-btn" class="bg-primary text-white px-5 py-2 rounded-lg font-medium btn-hover">
+                下一题 <i class="fa fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 结果页面 -->
+<div id="result-page" class="hidden min-h-screen p-4 py-8">
+    <div class="max-w-xl mx-auto bg-white rounded-2xl p-6 card-shadow">
+        <div class="text-center mb-6">
+            <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fa fa-trophy text-xl text-primary"></i>
+            </div>
+            <h2 class="text-xl font-bold">测试完成！</h2>
+            <div class="mt-3 mb-1 text-xl font-bold text-primary" id="type-code">----</div>
+            <div class="text-gray-700 font-medium" id="type-name">正在生成结果...</div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <div class="bg-neutral p-3 rounded-lg text-center">
+                <div class="text-xs text-gray-500">作息指数</div>
+                <div id="score1" class="font-semibold">0</div>
+            </div>
+            <div class="bg-neutral p-3 rounded-lg text-center">
+                <div class="text-xs text-gray-500">体态指数</div>
+                <div id="score2" class="font-semibold">0</div>
+            </div>
+            <div class="bg-neutral p-3 rounded-lg text-center">
+                <div class="text-xs text-gray-500">饮食指数</div>
+                <div id="score3" class="font-semibold">0</div>
+            </div>
+            <div class="bg-neutral p-3 rounded-lg text-center">
+                <div class="text-xs text-gray-500">精神指数</div>
+                <div id="score4" class="font-semibold">0</div>
+            </div>
+        </div>
+
+        <div class="space-y-4 text-sm text-gray-700 leading-relaxed mb-6">
+            <div id="result-desc">结果解析加载中...</div>
+        </div>
+
+        <div class="flex gap-3">
+            <button id="share-btn" class="flex-1 bg-primary text-white py-2 rounded-lg btn-hover">
+                <i class="fa fa-share-alt mr-1"></i>复制链接
+            </button>
+            <button id="restart-btn" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg btn-hover">
+                <i class="fa fa-refresh mr-1"></i>重新测试
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// 24题 全消极题干
+const questions = [
+    {id:1, q:"每到夜晚，我会越熬越清醒，舍不得结束一天、习惯性晚睡"},
+    {id:2, q:"我三餐饮食不规律，常吃外卖重口食物，蔬果摄入严重不足"},
+    {id:3, q:"我极度爱久坐，一坐下就不愿起身活动，长期缺乏走动"},
+    {id:4, q:"换季降温时我体质脆弱，很容易感冒咳嗽、身体不舒服"},
+    {id:5, q:"我频繁吃奶茶、炸鸡、火锅等高油高糖的垃圾快乐食品"},
+    {id:6, q:"早上被闹钟叫醒时，我精神萎靡、灵魂抽离，身体极度疲惫"},
+    {id:7, q:"久坐之后，我经常腰酸背痛、肩颈僵硬，身体酸痛感明显"},
+    {id:8, q:"我高度依赖咖啡/功能饮料，不靠提神饮品就无法正常状态"},
+    {id:9, q:"我的皮肤状态很差，容易反复爆痘、痘印堆积、肤质糟糕"},
+    {id:10,q:"睡前大脑胡思乱想、过度内耗，思绪杂乱很难入睡"},
+    {id:11,q:"我完全没有运动和拉伸习惯，极度不爱锻炼、懒得活动"},
+    {id:12,q:"社交聚会结束后，我会快速电量耗尽，身心疲惫、情绪低落"},
+    {id:13,q:"我很少喝白开水，日常靠奶茶咖啡冷饮替代正常饮水"},
+    {id:14,q:"周末作息彻底紊乱，疯狂赖床补觉、昼夜颠倒越睡越累"},
+    {id:15,q:"我日常坐姿极差，常年弯腰驼背、葛优瘫、翘二郎腿"},
+    {id:16,q:"每到下午三四点，我就精神涣散、头昏犯困、状态低迷"},
+    {id:17,q:"面对压力时，我会出现失眠、emo、身体不适等多种负面反应"},
+    {id:18,q:"吃完重油重辣重盐食物后，我会肠胃不适、上火长痘、代谢变差"},
+    {id:19,q:"只要熬夜，第二天就会头痛心慌、浑身乏力，整个人状态报废"},
+    {id:20,q:"我长期低头怼脸刷手机，姿势伤颈椎，完全不注重眼部颈椎保护"},
+    {id:21,q:"每天早上起床，我的脸部都会严重水肿，颜值状态大打折扣"},
+    {id:22,q:"我的肠胃十分脆弱敏感，经常胀气消化不良、容易腹泻难受"},
+    {id:23,q:"我日常极少走路活动，每日步数极低，长期宅家缺乏运动"},
+    {id:24,q:"我早睡执行力极差，频繁熬夜打脸，根本做不到规律早睡"}
+];
+
+// 16种人格解析
+const personality = {
+MPUW:"【MPUW】明律轻动清润稳序者\n健康人格：作息规律、爱动舒展、饮食清淡、情绪稳定，是天生的健康自律模板。精力充沛、身体耐受度高，小毛病很难找上你。\n💡 建议：保持节奏即可，偶尔放松更长久。",
+MPUX:"【MPUX】明律轻动清润易感体\n健康人格：作息稳、爱运动、吃得清淡，但容易精神紧绷、小事想太多。身体很健康，就是心容易累。\n💡 建议：每天留 10 分钟放空，少复盘多休息。",
+MPVW:"【MPVW】明律轻动浓享稳序者\n健康人格：作息规律、爱动、情绪稳，只是偏爱重口美食。整体状态优秀，肠胃偶尔小抗议。\n💡 建议：重口后多喝水 + 吃蔬菜，快乐健康两不误。",
+MPVX:"【MPVX】明律轻动浓享易感体\n健康人格：作息稳、爱动，但爱吃重口 + 精神易焦虑。容易上火、睡不沉、情绪波动。\n💡 建议：减少夜宵，睡前放松，肠胃和心情会一起变好。",
+MQUW:"【MQUW】明律静固清润稳序者\n健康人格：作息饮食都自律，情绪也稳，但久坐不动、身体偏僵硬。肩颈腰容易酸。\n💡 建议：每小时起身 2 分钟，拉伸比躺平更解乏。",
+MQUX:"【MQUX】明律静固清润易感体\n健康人格：作息饮食在线，体态偏僵，还容易精神内耗。身体不累，心很累。\n💡 建议：动起来就是最好的解压，散步 20 分钟超有用。",
+MQVW:"【MQVW】明律静固浓享稳序者\n健康人格：作息很稳，但久坐 + 重口，精神还算稳定。身体底子不错，但习惯在拉低状态。\n💡 建议：少吃油炸、多走路，小改变大提升。",
+MQVX:"【MQVX】明律静固浓享易感体\n健康人格：作息最稳，但久坐、重口、精神紧绷三件套。明明可以很健康，却被习惯耽误。\n💡 建议：一周 3 天清淡 + 每天 6000 步，两周气色大不一样。",
+NPUW:"【NPUW】夜行者轻动清润稳序者\n健康人格：睡得晚，但爱动、吃得清淡、情绪稳。属于熬夜但底子很硬的类型。\n💡 建议：固定入睡时间，别昼夜颠倒，熬夜后别猛补觉。",
+NPUX:"【NPUX】夜行者轻动清润易感体\n健康人格：晚睡、易焦虑，但爱动、吃得清淡。越夜越清醒，越想越睡不着。\n💡 建议：睡前远离刺激内容，泡脚 + 白噪音助眠更有效。",
+NPVW:"【NPVW】夜行者轻动浓享稳序者\n健康人格：睡得晚、爱吃重口，但爱动、情绪稳。快乐至上，短期没事，长期易上火长痘。\n💡 建议：夜宵戒掉，熬夜多喝水，周末用运动补回来。",
+NPVX:"【NPVX】夜行者轻动浓享易感体\n健康人格：熬夜 + 重口 + 易焦虑，典型快乐但伤身套餐。容易肠胃差、睡不踏实、情绪低落。\n💡 建议：戒夜宵 + 清淡一天 + 睡前放松，三件小事立刻舒服。",
+NQUW:"【NQUW】夜行者静固清润稳序者\n健康人格：晚睡、久坐不动，但饮食清淡、情绪稳定。白天犯困、注意力下降、肩颈难受。\n💡 建议：少熬夜 + 定时拉伸，白天晒太阳比咖啡更提神。",
+NQUX:"【NQUX】夜行者静固清润易感体\n健康人格：晚睡、不动、想太多。精神身体双疲惫，常常累却说不出哪里累。\n💡 建议：先固定睡觉时间，再每天动一动，睡好 + 动起来 = 全都好。",
+NQVW:"【NQVW】夜行者静固浓享稳序者\n健康人格：熬夜 + 久坐 + 重口，精神还撑得住。全靠年轻硬撑，身体已经悄悄报警。\n💡 建议：先从少熬一次夜、少吃一顿重口开始，别等不舒服才补救。",
+NQVX:"【NQVX】终极脆皮青年\n健康人格：熬夜、久坐、重口、内耗全占，身体长期透支。易疲劳、爆痘、肠胃差、情绪低。\n💡 建议：不用一步到位，先做三件小事：早睡 1 小时 + 走 3000 步 + 一顿清淡餐"
+};
+
+let current = 0;
+let answers = Array(24).fill(null);
+
+const $ = id => document.getElementById(id);
+const show = (id) => { $(id).classList.remove('hidden'); };
+const hide = (id) => { $(id).classList.add('hidden'); };
+
+// 加载题目
+function load() {
+    const q = questions[current];
+    $('question-title').textContent = `${current+1}. ${q.q}`;
+    $('progress-text').textContent = `${current+1}/24`;
+    $('progress-bar').style.width = ((current+1)/24*100) + '%';
+    
+    const opt = $('options-container');
+    opt.innerHTML = "";
+    const list = ["A. 非常符合我","B. 比较符合我","C. 不太符合我","D. 完全不符合我"];
+    const score = [1,2,3,4];
+    
+    list.forEach((t,i)=>{
+        const btn = document.createElement('div');
+        btn.className = "p-3 border rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-all";
+        btn.textContent = t;
+        if(answers[current] === score[i]) btn.classList.add('border-primary','bg-primary/5');
+        btn.onclick = () => {
+            answers[current] = score[i];
+            load();
+        };
+        opt.appendChild(btn);
+    });
+
+    $('prev-btn').disabled = current === 0;
+    $('prev-btn').classList.toggle('opacity-50', current===0);
+    $('prev-btn').classList.toggle('cursor-not-allowed', current===0);
+    $('next-btn').textContent = current ===23 ? "查看结果" : "下一题 →";
+}
+
+// 维度题号严格对应 各6题
+function calc() {
+    const s = answers;
+    // 作息6题：1/6/10/14/19/24
+    const 作息 = s[0] + s[5] + s[9] + s[13] + s[18] + s[23];
+    // 体态6题：3/7/11/15/20/23
+    const 体态 = s[2] + s[6] + s[10] + s[14] + s[19] + s[22];
+    // 饮食6题：2/5/9/13/18/22
+    const 饮食 = s[1] + s[4] + s[8] + s[12] + s[17] + s[21];
+    // 精神6题：4/8/12/16/17/21
+    const 精神 = s[3] + s[7] + s[11] + s[15] + s[16] + s[20];
+
+    // 判定线改为 17分
+    // ＞17 = 健康(M/P/U/W)
+    // ≤17 = 消极脆皮(N/Q/V/X)
+    const M = 作息 > 17;
+    const P = 体态 > 17;
+    const U = 饮食 > 17;
+    const W = 精神 > 17;
+
+    const code = (M?"M":"N") + (P?"P":"Q") + (U?"U":"V") + (W?"W":"X");
+    const res = personality[code] || "未知人格";
+    
+    $('score1').textContent = 作息;
+    $('score2').textContent = 体态;
+    $('score3').textContent = 饮食;
+    $('score4').textContent = 精神;
+    $('type-code').textContent = code;
+    $('type-name').textContent = res.split("\n")[0];
+    $('result-desc').innerHTML = res.replace(/\n/g,'<br>');
+}
+
+</script>
+</body>
+</html>
